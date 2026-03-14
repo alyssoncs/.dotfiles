@@ -127,7 +127,6 @@ let g:asmsyntax = 'nasm'
 	cnoremap <expr> %% getcmdtype() == ':' ? expand('%:h').'/' : '%%'
 
 " copy/paste
-	set guioptions=a
 	vnoremap <C-c> "+y
 	map <C-p> "+P
 
