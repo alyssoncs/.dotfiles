@@ -28,6 +28,7 @@ stow -D -t target-dir *
 ```
 stow --adopt -t target-dir package
 ```
+> This does not work!! Just copy the file to stow dir and delete it from the original place
 
 ### simulation mode
 ```
