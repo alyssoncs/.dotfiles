@@ -42,11 +42,6 @@ The `nixos` package (under `root`) tracks the system config at
 ```
 cd root && sudo stow -t / nixos
 ```
-This symlinks `/etc/nixos/configuration.nix` into this repo. Only
-`configuration.nix` is tracked — `hardware-configuration.nix` is machine-specific
-and intentionally left as a local, untracked file.
+This symlinks `/etc/nixos/configuration.nix` into this repo. Only `configuration.nix` is tracked — `hardware-configuration.nix` is machine-specific and intentionally left as a local, untracked file.
 
-Boot does not depend on the symlink: `nixos-rebuild switch` compiles the config
-into `/nix/store` and the bootloader points at that generation. The symlink only
-matters at rebuild time. To recover, use `sudo nixos-rebuild switch --rollback`
-or restore from a `configuration.nix.bak.*` backup.
+Boot does not depend on the symlink: `nixos-rebuild switch` compiles the config into `/nix/store` and the bootloader points at that generation. The symlink only matters at rebuild time. To recover, use `sudo nixos-rebuild switch --rollback` or restore from a `configuration.nix.bak.*` backup.
