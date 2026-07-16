@@ -4,6 +4,27 @@
 
 { config, pkgs, ... }:
 
+let
+  # Temurin JDK wrapped so its native libs (libstdc++.so.6, libz.so.1,
+  # libcrypt.so.1) are on LD_LIBRARY_PATH. Required on NixOS to build
+  # Kotlin Multiplatform / Kotlin-Native projects: the konan compiler loads
+  # native stubs (e.g. liborgjetbrainskotlinbackendkonanenvstubs.so) in-process
+  # inside the Gradle daemon. Without these libs it fails with
+  # "Could not initialize class org.jetbrains.kotlin.backend.konan.env.env".
+  jdkWithNativeLibs = pkgs.symlinkJoin {
+    name = "temurin-25-with-native-libs";
+    paths = [ pkgs.temurin-bin-25 ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/java \
+      --prefix LD_LIBRARY_PATH : ${pkgs.lib.makeLibraryPath [
+        pkgs.stdenv.cc.cc.lib   # libstdc++.so.6
+        pkgs.zlib               # libz.so.1
+        pkgs.libxcrypt-legacy   # libcrypt.so.1
+      ]}
+    '';
+  };
+in
 {
   imports =
     [ # Include the results of the hardware scan.
@@ -79,6 +100,11 @@
   environment.sessionVariables = {
     NIXOS_OZONE_WL = "1";
     ANDROID_HOME = "$HOME/Android/Sdk";
+    # Point JAVA_HOME at the wrapped JDK (with native libs on LD_LIBRARY_PATH).
+    # Without this, Gradle's shell env and daemon-JVM toolchain resolve the raw
+    # temurin-bin-25 store path, which lacks libstdc++.so.6 and breaks the
+    # Kotlin-Native (konan) compiler. See jdkWithNativeLibs above.
+    JAVA_HOME = "${jdkWithNativeLibs}";
   };
 
   system.userActivationScripts.androidSymlinks = {
@@ -189,19 +215,7 @@
   #};
   programs.java = {
     enable = true;
-    package = pkgs.symlinkJoin {
-      name = "temurin-25-with-native-libs";
-      paths = [ pkgs.temurin-bin-25 ];
-      nativeBuildInputs = [ pkgs.makeWrapper ];
-      postBuild = ''
-        wrapProgram $out/bin/java \
-        --prefix LD_LIBRARY_PATH : ${pkgs.lib.makeLibraryPath [
-          pkgs.stdenv.cc.cc.lib   # libstdc++.so.6
-          pkgs.zlib               # libz.so.1
-          pkgs.libxcrypt-legacy   # libcrypt.so.1
-        ]}
-      '';
-    };
+    package = jdkWithNativeLibs;
   };
 
   # Some programs need SUID wrappers, can be configured further or are
