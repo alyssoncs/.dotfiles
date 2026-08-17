@@ -197,6 +197,7 @@ in
     hunspellDicts.en_US
     just
     python3
+    skills
   ];
 
   environment.shellAliases = {
