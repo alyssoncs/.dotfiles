@@ -5,6 +5,13 @@
 { config, pkgs, ... }:
 
 let
+  androidStudioPkgs = import (builtins.fetchTarball {
+    url = "https://github.com/NixOS/nixpkgs/archive/6c6485c9a009c986ccbce5f420ba90564c293077.tar.gz";
+    sha256 = "0i9kdgkqrmxzizg4d5lai2zvy13jild95f1rzwpb6z8w8b4bfx4z";
+  }) {
+    config.allowUnfree = true;
+  };
+
   # Temurin JDK wrapped so its native libs (libstdc++.so.6, libz.so.1,
   # libcrypt.so.1) are on LD_LIBRARY_PATH. Required on NixOS to build
   # Kotlin Multiplatform / Kotlin-Native projects: the konan compiler loads
@@ -181,7 +188,7 @@ in
     mpv
     file
     unzip
-    android-studio
+    androidStudioPkgs.android-studio
     tree
     obs-studio
     imagemagick
